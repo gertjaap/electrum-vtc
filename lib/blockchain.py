@@ -31,6 +31,7 @@ from .util import bfh, bh2u
 import lyra2re_hash
 import lyra2re2_hash
 import lyra2re3_hash
+import verthash
 import vtc_scrypt_new
 
 MAX_TARGET = 0x00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
@@ -76,14 +77,22 @@ def hash_header(header):
 def pow_hash_header(header):
     height = header.get('block_height')
     header_bytes = bfh(serialize_header(header))
-    if height > 1080000:
-        return hash_encode(lyra2re3_hash.getPoWHash(header_bytes))
-    elif height >= 347000:
-        return hash_encode(lyra2re2_hash.getPoWHash(header_bytes))
-    elif height >= 208301:
-        return hash_encode(lyra2re_hash.getPoWHash(header_bytes))
+    if constants.net.TESTNET:
+        if height >= 231000:
+            return hash_encode(verthash.getPoWHash(header_bytes))
+        elif height > 158220:
+            return hash_encode(lyra2re3_hash.getPoWHash(header_bytes))
+        else:
+            return hash_encode(lyra2re2_hash.getPoWHash(header_bytes))
     else:
-        return hash_encode(vtc_scrypt_new.getPoWHash(header_bytes))
+        if height > 1080000:
+            return hash_encode(lyra2re3_hash.getPoWHash(header_bytes))
+        elif height >= 347000:
+            return hash_encode(lyra2re2_hash.getPoWHash(header_bytes))
+        elif height >= 208301:
+            return hash_encode(lyra2re_hash.getPoWHash(header_bytes))
+        else:
+            return hash_encode(vtc_scrypt_new.getPoWHash(header_bytes))
 
 blockchains = {}
 
